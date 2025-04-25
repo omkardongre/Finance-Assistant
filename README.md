@@ -23,3 +23,4 @@ A web application to simplify personal finance through expense tracking, budget 
 ---
 
 Reference: Obsidian Vision Document (~/Finance-Assistant-Vault/Vision.md)
+Integration test: GitHub ↔ Jira
