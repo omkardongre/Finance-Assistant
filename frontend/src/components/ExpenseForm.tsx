@@ -4,20 +4,50 @@ import { Textarea } from "@/components/ui/textarea";
 
 const categories = ["Food", "Transport", "Shopping", "Bills", "Other"];
 
-export default function ExpenseForm() {
+export default function ExpenseForm({ userId }: { userId: string }) {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState(categories[0]);
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       setError("Please enter a valid positive amount");
+      setSuccess("");
       return;
     }
-    // TODO: Submit expense data
+    if (!category || !date) {
+      setError("Please fill in all required fields");
+      setSuccess("");
+      return;
+    }
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/expenses`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parseFloat(amount),
+          category,
+          date,
+          description,
+          user_id: userId,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to save expense");
+      setSuccess("Expense saved!");
+      setError("");
+      setAmount("");
+      setCategory(categories[0]);
+      setDate("");
+      setDescription("");
+    } catch (err: any) {
+      setError(err.message);
+      setSuccess("");
+    }
   };
 
   return (
@@ -27,6 +57,7 @@ export default function ExpenseForm() {
     >
       <h2 className="text-2xl font-bold text-center">Log Expense</h2>
       {error && <p className="text-red-500 text-center">{error}</p>}
+      {success && <p className="text-green-500 text-center">{success}</p>}
       <div>
         <label htmlFor="amount" className="block text-sm font-medium">Amount</label>
         <input
@@ -90,6 +121,7 @@ export default function ExpenseForm() {
             setDate("");
             setDescription("");
             setError("");
+            setSuccess("");
           }}
         >
           Cancel

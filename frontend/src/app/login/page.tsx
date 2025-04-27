@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +24,10 @@ export default function LoginPage() {
       password,
     });
     if (error) setMessage(error.message);
-    else setMessage("Login successful!");
+    else {
+      setMessage("Login successful! Redirecting to dashboard...");
+      setTimeout(() => router.push("/dashboard"), 1000);
+    }
     setLoading(false);
   };
 
