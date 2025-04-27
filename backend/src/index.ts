@@ -74,6 +74,26 @@ app.get("/api/expenses", authenticateToken, asyncHandler(async (req: Request, re
   res.json(data);
 }));
 
+// Expense Listing Route
+app.get("/expenses", asyncHandler(async (req: Request, res: Response) => {
+  const user_id = req.query.user_id as string;
+  if (!user_id) {
+    res.status(400).json({ error: "user_id is required" });
+    return;
+  }
+  try {
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("*")
+      .eq("user_id", user_id)
+      .order("date", { ascending: false });
+    if (error) throw error;
+    res.status(200).json({ expenses: data });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+}));
+
 // Signup Route
 app.post("/signup", asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -87,6 +107,23 @@ app.post("/signup", asyncHandler(async (req: Request, res: Response) => {
     res.status(201).json({ message: "User created", user: data.user });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+}));
+
+// Login Route
+app.post("/login", asyncHandler(async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    res.status(400).json({ error: "Email and password are required" });
+    return;
+  }
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    // Return JWT token and user info
+    res.status(200).json({ message: "Login successful", token: data.session?.access_token, user: data.user });
+  } catch (error: any) {
+    res.status(401).json({ error: error.message });
   }
 }));
 

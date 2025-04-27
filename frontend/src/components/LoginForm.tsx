@@ -1,12 +1,14 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +19,7 @@ export default function LoginForm() {
     }
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/signup`,
+        `${process.env.NEXT_PUBLIC_API_URL}/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -25,11 +27,12 @@ export default function LoginForm() {
         }
       );
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Signup failed");
-      setSuccess("Account created! Please log in.");
+      if (!response.ok) throw new Error(data.error || "Login failed");
+      // Store token (e.g., in localStorage)
+      localStorage.setItem("auth_token", data.token);
+      setSuccess("Login successful! Redirecting to dashboard...");
       setError("");
-      setEmail("");
-      setPassword("");
+      setTimeout(() => router.push("/dashboard"), 1000);
     } catch (err: any) {
       setError(err.message);
       setSuccess("");
