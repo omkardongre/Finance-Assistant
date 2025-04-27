@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -19,14 +20,20 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error, data } = await supabase.auth.signUp({ email, password });
     if (error) setMessage(error.message);
-    else setMessage("Signup successful! Check your email for confirmation.");
+    else if (data.user && !data.user.email_confirmed_at) {
+      setMessage("Signup successful! Check your email to confirm your account.");
+    } else {
+      setMessage("Signup successful! Redirecting to dashboard...");
+      setTimeout(() => router.push("/dashboard"), 1500);
+    }
     setLoading(false);
   };
 
